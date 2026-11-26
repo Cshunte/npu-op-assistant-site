@@ -115,17 +115,13 @@
   </g>
 </svg>
 
-<h2>技术栈与运行</h2>
+<h2>技术栈</h2>
 <div class="grid">
   <div class="card"><b>前端</b><span>原生 HTML / CSS / JavaScript，无构建步骤，直接打开即用。</span></div>
   <div class="card"><b>后端</b><span>Python 标准库 HTTP（零依赖）与 FastAPI 双入口。</span></div>
   <div class="card"><b>检索</b><span>文档按标题切片 + 关键词重合度打分，带相关性门槛。</span></div>
   <div class="card"><b>模型</b><span>OpenAI 兼容接口，离线 / API / vLLM 三种模式可切换。</span></div>
 </div>
-
-<p style="margin-top:18px">本地启动只需要 Python，不用装任何第三方包：</p>
-<pre><code>python backend/standalone.py
-# 浏览器打开 http://127.0.0.1:8000</code></pre>
 
 <h2>一个实际修掉的问题</h2>
 <p>早期版本里，问「你能做什么」会把 Resize 等算子文档原样倒出来，属于典型的答非所问。排查下来是三个原因叠在一起：</p>
