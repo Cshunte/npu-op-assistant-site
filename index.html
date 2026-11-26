@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NPU 算子开发助手</title>
+<style>
+  :root {
+    --ink: #1f2328;
+    --muted: #57606a;
+    --line: #d8dee4;
+    --bg: #ffffff;
+    --soft: #f6f8fa;
+    --link: #0969da;
+    --code-bg: #f6f8fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+  header { padding: 48px 0 28px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 30px; margin: 0 0 8px; letter-spacing: -.3px; }
+  .sub { color: var(--muted); font-size: 17px; margin: 0 0 22px; }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 8px 16px; border-radius: 6px;
+    text-decoration: none; font-size: 14px; font-weight: 600;
+    border: 1px solid var(--line); color: var(--ink); background: #fafbfc;
+  }
+  .btn.primary { background: var(--link); border-color: var(--link); color: #fff; }
+  .btn:hover { text-decoration: none; filter: brightness(.97); }
+  h2 { font-size: 20px; margin: 40px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 14px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  code {
+    background: var(--code-bg); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 5px; font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.55;
+  }
+  pre code { background: none; border: 0; padding: 0; }
+  a { color: var(--link); }
+  .note {
+    background: var(--soft); border-left: 3px solid var(--line);
+    padding: 10px 16px; color: var(--muted); font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .arch { width: 100%; height: auto; display: block; margin: 8px 0 4px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+  .card b { display: block; margin-bottom: 4px; font-size: 15px; }
+  .card span { color: var(--muted); font-size: 14px; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 26px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>NPU 算子开发助手</h1>
+  <p class="sub">一个面向 NPU 算子开发的问答与文档检索工具。把算子文档、部署经验和可执行工具接到一起，用对话的方式查资料、答问题。</p>
+  <div class="btns">
+    <a class="btn primary" href="https://npu-op-assistant.app.workbuddy.host/?sharecode=UC2TGBGXOY" target="_blank" rel="noopener">在线体验</a>
+  </div>
+</header>
+
+<h2>它能做什么</h2>
+<ul>
+  <li>算子文档问答：按 <code>##</code> 标题切片建索引，检索相关段落再交给模型作答。</li>
+  <li>三种模型模式：<code>offline</code>（免配置演示）、<code>api</code>（OpenAI 兼容接口）、<code>vllm</code>（本地部署模型），统一一套调用方式。</li>
+  <li>工具调用：内置 3 个可执行函数，Agent 会按需调用并控制最多 3 轮，避免无限循环。</li>
+  <li>两种后端入口：<code>standalone.py</code> 只用标准库、零依赖可跑；<code>main.py</code> 是 FastAPI 版，方便接生产服务。</li>
+</ul>
+
+<h2>整体结构</h2>
+<svg class="arch" viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#8c959f"/>
+    </marker>
+  </defs>
+  <g stroke="#8c959f" stroke-width="1.4" fill="none" marker-end="url(#arw)">
+    <line x1="150" y1="150" x2="205" y2="150"/>
+    <line x1="355" y1="150" x2="410" y2="150"/>
+    <line x1="560" y1="150" x2="615" y2="150"/>
+    <line x1="410" y1="120" x2="410" y2="78"/>
+    <line x1="410" y1="180" x2="410" y2="222"/>
+  </g>
+  <g fill="#fff" stroke="#afb8c1" stroke-width="1.3" rx="8">
+    <rect x="14" y="118" width="136" height="64" rx="8"/>
+    <rect x="205" y="118" width="150" height="64" rx="8"/>
+    <rect x="410" y="118" width="150" height="64" rx="8"/>
+    <rect x="615" y="118" width="190" height="64" rx="8"/>
+    <rect x="320" y="34" width="180" height="44" rx="8"/>
+    <rect x="320" y="222" width="180" height="44" rx="8"/>
+  </g>
+  <g fill="#1f2328" font-size="14" text-anchor="middle">
+    <text x="82" y="146">浏览器前端</text><text x="82" y="165" font-size="11" fill="#57606a">原生 JS 免构建</text>
+    <text x="280" y="146">HTTP 服务</text><text x="280" y="165" font-size="11" fill="#57606a">standalone / FastAPI</text>
+    <text x="485" y="146">Agent 编排</text><text x="485" y="165" font-size="11" fill="#57606a">意图识别 + 轮次控制</text>
+    <text x="710" y="146">模型层 provider</text><text x="710" y="165" font-size="11" fill="#57606a">offline / api / vllm</text>
+    <text x="410" y="61">RAG 检索</text>
+    <text x="410" y="249">工具注册表</text>
+  </g>
+</svg>
+
+<h2>技术栈与运行</h2>
+<div class="grid">
+  <div class="card"><b>前端</b><span>原生 HTML / CSS / JavaScript，无构建步骤，直接打开即用。</span></div>
+  <div class="card"><b>后端</b><span>Python 标准库 HTTP（零依赖）与 FastAPI 双入口。</span></div>
+  <div class="card"><b>检索</b><span>文档按标题切片 + 关键词重合度打分，带相关性门槛。</span></div>
+  <div class="card"><b>模型</b><span>OpenAI 兼容接口，离线 / API / vLLM 三种模式可切换。</span></div>
+</div>
+
+<p style="margin-top:18px">本地启动只需要 Python，不用装任何第三方包：</p>
+<pre><code>python backend/standalone.py
+# 浏览器打开 http://127.0.0.1:8000</code></pre>
+
+<h2>一个实际修掉的问题</h2>
+<p>早期版本里，问「你能做什么」会把 Resize 等算子文档原样倒出来，属于典型的答非所问。排查下来是三个原因叠在一起：</p>
+<ol>
+  <li>没有意图识别，元问题（问能力、问用法）也被当成知识检索；</li>
+  <li>检索没有相关性门槛，任何问题都会返回得分最高的文档；</li>
+  <li>离线回答是把检索片段无脑拼接，没有组织。</li>
+</ol>
+<p>对应做了三处修改：加元问题关键词识别、给检索加最小匹配数门槛、重写离线回答逻辑。这个问题后来整理成了一份 STAR 结构的复盘文档，放在项目仓库里。</p>
+
+<p class="note">在线演示跑的是 offline 模式：RAG、工具调用和意图识别都在，模型回答是内置演示逻辑。想接真实模型，配置 API Key 或 vLLM 地址切换模式即可。</p>
+
+<footer>
+  个人项目 · 源码暂不公开，如需交流欢迎联系作者
+</footer>
+
+</div>
+</body>
+</html>
